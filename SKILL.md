@@ -83,6 +83,7 @@ Security scanning answers "is this skill safe?" — it does **not** answer "are 
 5. **Examples / Common mistakes**: the "Fix" column must match the **current** Rules, not an earlier version.
 6. **Cross-references / parent-child links**: referenced skills exist and responsibilities do not overlap.
 7. **File hygiene**: no stray terminators (`EOF`), duplicate headings, or leftover artifacts.
+8. **Documentation compliance ≠ implementation compliance** (critical): when a rule mandates a backend, widget, or API, open the **actual code** and confirm it complies. A README line, a Demo-Tools table, or a `legacy` / `exception` label in documentation does **not** make a violating implementation compliant. If code contradicts a rule, either convert the code or remove it from the documented demos — never paper over it with a nuance clause.
 
 ### Write the result
 - Edit `SKILL.md` in place with the corrections — do not merely report them.
@@ -101,6 +102,8 @@ Security scanning answers "is this skill safe?" — it does **not** answer "are 
 - [ ] Common mistakes match current rules
 - [ ] Cross-references valid, no overlapping responsibility
 - [ ] No stray `EOF` / duplicate headings
+- [ ] Documented rules verified against the actual code (not just the docs)
+- [ ] No `legacy` / `exception` label used to excuse a rule violation
 - [ ] Corrections written into `SKILL.md`
 - [ ] Audit + drift re-run
 
@@ -132,6 +135,6 @@ Same as audit-skill. See `audit-skill` SKILL.md for the full list.
 ## References
 - `audit-skill` SKILL.md — full security workflow
 - `audit-skill` scripts/audit_skill.py — scanner helper
-- Logic check: 2026-11-22 — added top-to-bottom Logic Consistency Check; fixed description / thin-alias claim / stray `EOF`.
+- Logic check: 2026-11-22 — added top-to-bottom Logic Consistency Check; fixed description / thin-alias claim / stray `EOF`. Second pass: added step 8 "documentation compliance ≠ implementation compliance" (source of truth, hooked from `viz-dboard` Demo Tools).
 
 > **Note for reviewers:** when auditing another skill, apply both gates — `audit-skill` for safety, then **Logic Consistency Check** above for rule coherence. A 0/100 LOW SAFE verdict is not a logic verdict.
