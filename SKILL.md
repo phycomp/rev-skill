@@ -90,6 +90,9 @@ Security scanning answers "is this skill safe?" — it does **not** answer "are 
      - **Code layer** — every listed demo's `app.py` actually uses the mandated backend.
      For `qbit-viz`: `qbit-gate-viz/app.py` (2D matplotlib) and `bloch-evolution-viz/app.py` (PyVista + Panel), plus its own snippets. Record the verdict in the `Logic check:` line; fix both layers if either fails. **Do not copy viz-dboard's demo rules here — hook only.**
    - **If the workflow's terminal action is publishing/pushing** (e.g. `publish-to-github`): do **not** invoke `viz-dboard` — no drawing or demo verification is needed. The predicate is the workflow goal, not the skill name.
+10. **Distilled-first implementation prerequisite**: confirm the skill points to `viz-dboard`'s **Demo Implementation Prerequisite — Distilled-First** rule before any demo code is written or changed. The prerequisite is: `~/荐家/布球/INDEX.md` → matching `*_distilled.md` (the `file-distill` outputs) → only then raw `.py` experiments or sibling demos. Do **not** copy the read-order table or rationalization table into this skill — `viz-dboard` owns it; just verify it is present and that the skill's demo entries do not teach "read raw source first".
+    - If the user says a evolved feature must live **inside an existing `app.py`** (not a standalone demo), also verify the Demo Tools table lists one integrated app and marks any retired standalone demo as such. A stale "two demos" entry is a logic error — write the correction into the skill.
+    - Red flag to counter explicitly: "distilled notes are second-hand, the raw `.py` is authoritative" — this rationalization was observed in the RED baseline and is false here because raw scripts contain superseded backends.
 
 ### Write the result
 - Edit `SKILL.md` in place with the corrections — do not merely report them.
@@ -109,6 +112,8 @@ Security scanning answers "is this skill safe?" — it does **not** answer "are 
 - [ ] Cross-references valid, no overlapping responsibility
 - [ ] No stray `EOF` / duplicate headings
 - [ ] Goal-based hook applied: review → `viz-dboard` verifies doc layer + code layer; publish/push → no viz-dboard; no demo rules duplicated here
+- [ ] Distilled-first prerequisite verified in `viz-dboard` (INDEX.md + matching `*_distilled.md` before raw .py / sibling demo); no read-order table duplicated here
+- [ ] Integrated demo (not standalone) reflected in Demo Tools when the user requires it
 - [ ] No `legacy` / `exception` label used to excuse a rule violation
 - [ ] Corrections written into `SKILL.md`
 - [ ] Audit + drift re-run
@@ -141,6 +146,6 @@ Same as audit-skill. See `audit-skill` SKILL.md for the full list.
 ## References
 - `audit-skill` SKILL.md — full security workflow
 - `audit-skill` scripts/audit_skill.py — scanner helper
-- Logic check: 2026-11-22 — added top-to-bottom Logic Consistency Check; fixed description / thin-alias claim / stray `EOF`. Second pass: added step 8 "documentation compliance ≠ implementation compliance" (source of truth, hooked from `viz-dboard` Demo Tools). Third pass: added step 9 "hook the implementation demo after the logic check" (doc layer + code layer), hooked from `viz-dboard`. Fourth pass: step 9 now explicitly hooks `viz-dboard` by name as the verifier (no demo rules copied into this skill); description updated accordingly. Fifth pass: hook is now **goal-conditioned** — review workflows hook `viz-dboard`, publish/push workflows skip it.
+- Logic check: 2026-11-22 — added top-to-bottom Logic Consistency Check; fixed description / thin-alias claim / stray `EOF`. Second pass: added step 8 "documentation compliance ≠ implementation compliance" (source of truth, hooked from `viz-dboard` Demo Tools). Third pass: added step 9 "hook the implementation demo after the logic check" (doc layer + code layer), hooked from `viz-dboard`. Fourth pass: step 9 now explicitly hooks `viz-dboard` by name as the verifier (no demo rules copied into this skill); description updated accordingly. Fifth pass: hook is now **goal-conditioned** — review workflows hook `viz-dboard`, publish/push workflows skip it. Sixth pass (user rule): added step 10 "distilled-first implementation prerequisite" — verify `viz-dboard` owns the read-order rule (`INDEX.md` → matching `*_distilled.md` → raw `.py`), counter the "raw source is authoritative" rationalization from RED baseline, and correct stale standalone-demo entries when the user requires one integrated `app.py`.
 
 > **Note for reviewers:** when auditing another skill, apply both gates — `audit-skill` for safety, then **Logic Consistency Check** above for rule coherence. A 0/100 LOW SAFE verdict is not a logic verdict.
