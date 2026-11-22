@@ -84,10 +84,12 @@ Security scanning answers "is this skill safe?" — it does **not** answer "are 
 6. **Cross-references / parent-child links**: referenced skills exist and responsibilities do not overlap.
 7. **File hygiene**: no stray terminators (`EOF`), duplicate headings, or leftover artifacts.
 8. **Documentation compliance ≠ implementation compliance** (critical): when a rule mandates a backend, widget, or API, open the **actual code** and confirm it complies. A README line, a Demo-Tools table, or a `legacy` / `exception` label in documentation does **not** make a violating implementation compliant. If code contradicts a rule, either convert the code or remove it from the documented demos — never paper over it with a nuance clause.
-9. **Hook `viz-dboard` after the logic check**: a passing doc review is not complete until the domain skill's demo is verified. Invoke `viz-dboard` by name — it owns Demo Tools, the backend rules, and the demo-code verification method — and have it confirm "doc compliance + code compliance":
-   - **Doc layer** — every example/table/guardrail in the skill's `SKILL.md` obeys the rule.
-   - **Code layer** — every listed demo's `app.py` actually uses the mandated backend.
-   For `qbit-viz` that means `qbit-gate-viz/app.py` (2D matplotlib) and `bloch-evolution-viz/app.py` (PyVista + Panel), plus its own example snippets. Record the verdict in the `Logic check:` line; fix both layers if either fails. **Do not copy viz-dboard's demo rules here — hook only.**
+9. **Conditional demo hook — only for review workflows**:
+   - **If the workflow's goal is a logic/compliance review** (e.g. `chain-skill` refactor, `skill-timer` weekly check): after the logic check, invoke `viz-dboard` by name — it owns Demo Tools, backend rules, and demo-code verification — to confirm "doc compliance + code compliance":
+     - **Doc layer** — every example/table/guardrail in the skill's `SKILL.md` obeys the rule.
+     - **Code layer** — every listed demo's `app.py` actually uses the mandated backend.
+     For `qbit-viz`: `qbit-gate-viz/app.py` (2D matplotlib) and `bloch-evolution-viz/app.py` (PyVista + Panel), plus its own snippets. Record the verdict in the `Logic check:` line; fix both layers if either fails. **Do not copy viz-dboard's demo rules here — hook only.**
+   - **If the workflow's terminal action is publishing/pushing** (e.g. `publish-to-github`): do **not** invoke `viz-dboard` — no drawing or demo verification is needed. The predicate is the workflow goal, not the skill name.
 
 ### Write the result
 - Edit `SKILL.md` in place with the corrections — do not merely report them.
@@ -106,7 +108,7 @@ Security scanning answers "is this skill safe?" — it does **not** answer "are 
 - [ ] Common mistakes match current rules
 - [ ] Cross-references valid, no overlapping responsibility
 - [ ] No stray `EOF` / duplicate headings
-- [ ] `viz-dboard` hooked to verify doc layer + code layer (e.g. `qbit-viz` demos); no demo rules duplicated here
+- [ ] Goal-based hook applied: review → `viz-dboard` verifies doc layer + code layer; publish/push → no viz-dboard; no demo rules duplicated here
 - [ ] No `legacy` / `exception` label used to excuse a rule violation
 - [ ] Corrections written into `SKILL.md`
 - [ ] Audit + drift re-run
@@ -139,6 +141,6 @@ Same as audit-skill. See `audit-skill` SKILL.md for the full list.
 ## References
 - `audit-skill` SKILL.md — full security workflow
 - `audit-skill` scripts/audit_skill.py — scanner helper
-- Logic check: 2026-11-22 — added top-to-bottom Logic Consistency Check; fixed description / thin-alias claim / stray `EOF`. Second pass: added step 8 "documentation compliance ≠ implementation compliance" (source of truth, hooked from `viz-dboard` Demo Tools). Third pass: added step 9 "hook the implementation demo after the logic check" (doc layer + code layer), hooked from `viz-dboard`. Fourth pass: step 9 now explicitly hooks `viz-dboard` by name as the verifier (no demo rules copied into this skill); description updated accordingly.
+- Logic check: 2026-11-22 — added top-to-bottom Logic Consistency Check; fixed description / thin-alias claim / stray `EOF`. Second pass: added step 8 "documentation compliance ≠ implementation compliance" (source of truth, hooked from `viz-dboard` Demo Tools). Third pass: added step 9 "hook the implementation demo after the logic check" (doc layer + code layer), hooked from `viz-dboard`. Fourth pass: step 9 now explicitly hooks `viz-dboard` by name as the verifier (no demo rules copied into this skill); description updated accordingly. Fifth pass: hook is now **goal-conditioned** — review workflows hook `viz-dboard`, publish/push workflows skip it.
 
 > **Note for reviewers:** when auditing another skill, apply both gates — `audit-skill` for safety, then **Logic Consistency Check** above for rule coherence. A 0/100 LOW SAFE verdict is not a logic verdict.
