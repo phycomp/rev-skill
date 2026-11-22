@@ -1,15 +1,16 @@
 ---
 name: rev-skill
-description: Alias for audit-skill plus skill rename capability. Use when the user asks to "review a skill", "audit a skill", "check skill security", or "rename a skill" — delegates security workflow to audit-skill and provides rename workflow (directory + frontmatter + git + publish). Prefer audit-skill directly for security reviews.
+description: Alias for audit-skill plus skill rename and top-to-bottom logic consistency checking. Use when the user asks to "review a skill", "audit a skill", "check skill security", "check whether rules are logically consistent", "review rules top to bottom", or "rename a skill" — delegates security workflow to audit-skill and provides rename plus logic-consistency workflows that write corrections into the skill. Prefer audit-skill directly for pure security reviews.
 ---
 
 # rev-skill (Alias → audit-skill)
 
-This skill is a **thin alias** for `audit-skill`. All security review logic lives in `audit-skill`.
+This skill delegates all **security** review to `audit-skill`. It adds two local capabilities: **Rename** and **Logic Consistency Check** (top-to-bottom rule audit that writes corrections into the skill).
 
 ## When to Use
 
 - User asks to "review a skill" or "audit a skill" and mentions `rev-skill` by name
+- User says "檢查規則是否符合邏輯" / "由上至下" / "將之寫入" — run the Logic Consistency Check below
 - Backward compatibility with existing workflows that reference `rev-skill`
 
 ## Rename Capability
@@ -62,13 +63,54 @@ rev-skill can **rename** an existing skill (directory + frontmatter + repo) in o
 - [ ] Parent-child references updated in dependent skills
 - [ ] Old skill deprecated or removed
 
+## Logic Consistency Check (由上至下檢查規則是否符合邏輯，並寫入)
+
+Security scanning answers "is this skill safe?" — it does **not** answer "are its rules logically coherent?" A skill can score 0/100 LOW SAFE and still teach stale or contradictory behavior. This capability checks the rules from top to bottom and **writes the corrections into the SKILL.md**.
+
+### When to use
+- A bug fix changed behavior, but the skill documenting it may still teach the old behavior.
+- User says "檢查規則是否符合邏輯", "由上至下", or "將之寫入".
+- Before re-audit: logic errors survive a security scan.
+
+### Procedure — read in order, do not skip
+1. **Frontmatter**: `name:` matches the directory; `description:` starts with "Use when..." and mentions **every** capability the body claims. A capability present in the body but absent from the description is inconsistent.
+2. **Core invariant / overview**: identify the single invariant. Every later rule must be a consequence of it — if a rule contradicts it, the rule is stale or the invariant is wrong.
+3. **When to Use**: every listed symptom must be resolvable by some rule later in the document.
+4. **Rules, in order**: for each rule ask —
+   - Does it contradict an earlier rule or the core invariant?
+   - Does its code example actually implement the rule it claims to?
+   - Did behavior change while this rule kept the superseded approach (e.g. post-hoc `st.info` correction still documented after switching to option filtering)?
+5. **Examples / Common mistakes**: the "Fix" column must match the **current** Rules, not an earlier version.
+6. **Cross-references / parent-child links**: referenced skills exist and responsibilities do not overlap.
+7. **File hygiene**: no stray terminators (`EOF`), duplicate headings, or leftover artifacts.
+
+### Write the result
+- Edit `SKILL.md` in place with the corrections — do not merely report them.
+- Add a `Logic check:` line under `References` recording the date and what was corrected (or "no stale rules found").
+- Re-audit and refresh the drift manifest:
+  ```bash
+  python3 ~/.agents/skills/audit-skill/scripts/audit_skill.py ~/.agents/skills/<name>
+  python3 ~/.agents/skills/audit-skill/scripts/audit_skill.py --verify ~/skill-reports/manifests/<name>.sha256 ~/.agents/skills/<name>
+  ```
+
+### Checklist
+- [ ] `name` / `description` cover all capabilities in the body
+- [ ] Core invariant consistent with every rule
+- [ ] No stale rule contradicts a newer one
+- [ ] Code examples implement their own rule
+- [ ] Common mistakes match current rules
+- [ ] Cross-references valid, no overlapping responsibility
+- [ ] No stray `EOF` / duplicate headings
+- [ ] Corrections written into `SKILL.md`
+- [ ] Audit + drift re-run
+
 ## Delegation
 
 **Do not duplicate audit-skill's workflow here.** Instead:
 
 1. Load and follow `audit-skill` (SKILL.md + scripts/audit_skill.py)
 2. All security scanning, manifest recording, and verdict logic is in `audit-skill`
-3. This skill adds no additional capabilities (except Rename)
+3. This skill adds no additional **security** capabilities; its local additions are Rename and Logic Consistency Check (above)
 
 ## What audit-skill provides
 
@@ -88,6 +130,8 @@ rev-skill can **rename** an existing skill (directory + frontmatter + repo) in o
 Same as audit-skill. See `audit-skill` SKILL.md for the full list.
 
 ## References
-- `audit-skill` SKILL.md — full workflow
+- `audit-skill` SKILL.md — full security workflow
 - `audit-skill` scripts/audit_skill.py — scanner helper
-EOF
+- Logic check: 2026-11-22 — added top-to-bottom Logic Consistency Check; fixed description / thin-alias claim / stray `EOF`.
+
+> **Note for reviewers:** when auditing another skill, apply both gates — `audit-skill` for safety, then **Logic Consistency Check** above for rule coherence. A 0/100 LOW SAFE verdict is not a logic verdict.
